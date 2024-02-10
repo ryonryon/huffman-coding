@@ -1,32 +1,35 @@
 import { Huffman } from "./Huffman";
 import { PriorityQueue } from "./PriorityQueue";
 
-export function buildTree(letters: Array<[number, string]>): Huffman {
-  const huffmanList = letters.map(
-    (l) =>
+export function buildTree(frequencies: Record<string, number>): Huffman {
+  const huffmanArr = [];
+  for (const char of Object.keys(frequencies)) {
+    huffmanArr.push(
       new Huffman({
-        char: l[1],
-        frequency: l[0],
+        char,
+        frequency: frequencies[char],
       })
-  );
-  const minHeap = new PriorityQueue<Huffman>(
-    huffmanList,
-    (huffman1, huffman2) => huffman1.frequency < huffman2.frequency
+    );
+  }
+
+  const pq = new PriorityQueue<Huffman>(
+    huffmanArr,
+    (a, b) => a.frequency < b.frequency
   );
 
-  while (1 < minHeap.size()) {
-    const first = minHeap.pop()!;
-    const second = minHeap.pop()!;
+  while (pq.size() > 1) {
+    const first = pq.pop();
+    const second = pq.pop();
 
-    const combined = new Huffman({
+    const node = new Huffman({
       char: "",
       frequency: first.frequency + second.frequency,
     });
+    node.left = first;
+    node.right = second;
 
-    combined.left = first;
-    combined.right = second;
-    minHeap.add(combined);
+    pq.add(node);
   }
 
-  return minHeap.pop()!;
+  return pq.pop()!;
 }
